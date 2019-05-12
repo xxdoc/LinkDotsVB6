@@ -96,6 +96,8 @@ Public Sub UpdateObject(Object As GameObject)
             
             CanPlace = False
             
+            frmDebug.DebugPrint Object.X
+            
             If (Val(Trim$(Object.DataTag)) = 0) Then
                 CanPlace = True
             End If

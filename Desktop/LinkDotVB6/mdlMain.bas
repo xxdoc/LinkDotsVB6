@@ -5,6 +5,8 @@ Global ObjRemoveQueue() As GameObject
 Global Dots() As GameObject
 Global CamX, CamY As Long
 
+Global Const INTEGERLIMIT = 32767
+
 Global Const CAMXOFFSET = 200
 Global Const CAMYOFFSET = 700
 
@@ -125,7 +127,7 @@ Public Sub Update()
     For I = 0 To UBound(Dots) - 1
         'S = S & Dots(I).ID & " "
     Next I
-    frmDebug.DebugPrint S
+    'frmDebug.DebugPrint S
     For I = 0 To UBound(ObjCreateQueue) - 1
         Create ObjCreateQueue(I), ObjCreateQueue(I).X, ObjCreateQueue(I).Y, ObjCreateQueue(I).TypeID
         If (ObjCreateQueue(I).TypeID = DOT) Then
@@ -140,15 +142,19 @@ Public Sub Update()
 End Sub
 
 Public Sub Render()
+    'Note there will be an error if link dot position extend pass integer limit.
     Dim I As Integer
     Dim Obj As GameObject
     For I = 0 To UBound(Objects) - 1
         Obj = Objects(I)
         If (Not Obj.CustomDraw) Then
-            Dim DrawX, DrawY As Integer
+            Dim DrawX, DrawY As Long
             DrawX = CamCorrectX(Obj.X)
             DrawY = CamCorrectY(Obj.Y)
-            DrawImage GetSprite(Obj.SpriteID, Obj.SpriteFrame), DrawX, DrawY
+            
+            If (DrawX < INTEGERLIMIT And DrawX > -INTEGERLIMIT) And (DrawY < INTEGERLIMIT And DrawY > -INTEGERLIMIT) Then
+                DrawImage GetSprite(Obj.SpriteID, Obj.SpriteFrame), DrawX, DrawY
+            End If
         Else
             RenderObject Obj
         End If
