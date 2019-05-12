@@ -63,12 +63,12 @@ Public Sub RenderObject(Object As GameObject)
         Case DOT
             frmMain.picDisplay.FillStyle = vbFSSolid
             frmMain.picDisplay.FillColor = vbCyan
-            frmMain.picDisplay.Circle (Object.X, Object.Y), 100, vbBlue
+            frmMain.picDisplay.Circle (CamCorrectX(Object.X), CamCorrectY(Object.Y)), 100, vbBlue
         Case LINK
             frmMain.picDisplay.DrawWidth = Val(Object.DataTag)
             frmMain.picDisplay.ForeColor = vbBlue
             For I = 0 To UBound(LinkDots) - 1
-                frmMain.picDisplay.Line (LinkDots(I).X, LinkDots(I).Y)-(LinkDots((I + 1) Mod UBound(LinkDots)).X, LinkDots((I + 1) Mod UBound(LinkDots)).Y)
+                frmMain.picDisplay.Line (CamCorrectX(LinkDots(I).X), CamCorrectY(LinkDots(I).Y))-(CamCorrectX(LinkDots((I + 1) Mod UBound(LinkDots)).X), CamCorrectY(LinkDots((I + 1) Mod UBound(LinkDots)).Y))
             Next I
             frmMain.picDisplay.DrawWidth = 1
     End Select
@@ -160,6 +160,9 @@ Public Sub UpdateObject(Object As GameObject)
                     Object.Y = YPrev
                 End If
             Next I
+            
+            CamX = Object.X + CAMXOFFSET
+            CamY = Object.Y + CAMYOFFSET
         Case LINK
             ActiveLink = True
             Object.DataTag = Format$((Val(Object.DataTag) - 1), "0")

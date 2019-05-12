@@ -5,13 +5,24 @@ Global ObjRemoveQueue() As GameObject
 Global Dots() As GameObject
 Global CamX, CamY As Long
 
+Global Const CAMXOFFSET = 200
+Global Const CAMYOFFSET = 700
+
+Public Function CamCorrectX(ByVal X As Long) As Long
+    CamCorrectX = (frmMain.Width / 2) + (X - CamX)
+End Function
+
+Public Function CamCorrectY(ByVal Y As Long) As Long
+    CamCorrectY = (frmMain.Height / 2) + (Y - CamY)
+End Function
+
 Public Sub Init()
     ReDim Objects(0)
     ReDim ObjCreateQueue(0)
     ReDim ObjRemoveQueue(0)
     ReDim Dots(0)
-    CamX = 0
-    CamY = 0
+    CamX = 3500
+    CamY = 1700
 End Sub
 
 Public Function IsKeyDown(ByVal Key As Integer) As Boolean
@@ -135,8 +146,8 @@ Public Sub Render()
         Obj = Objects(I)
         If (Not Obj.CustomDraw) Then
             Dim DrawX, DrawY As Integer
-            DrawX = Obj.X
-            DrawY = Obj.Y
+            DrawX = CamCorrectX(Obj.X)
+            DrawY = CamCorrectY(Obj.Y)
             DrawImage GetSprite(Obj.SpriteID, Obj.SpriteFrame), DrawX, DrawY
         Else
             RenderObject Obj
