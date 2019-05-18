@@ -7,6 +7,7 @@ Module=mdlGraphics; mdlGraphics.bas
 Module=mdlObject; mdlObject.bas
 Form=frmImages.frm
 Form=frmDebug.frm
+Module=mdlLevel; mdlLevel.bas
 IconForm="frmStart"
 Startup="frmStart"
 Command32=""

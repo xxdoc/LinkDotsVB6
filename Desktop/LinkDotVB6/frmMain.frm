@@ -1,11 +1,13 @@
 VERSION 5.00
 Begin VB.Form frmMain 
-   Caption         =   "Form1"
+   BorderStyle     =   1  'Fixed Single
+   Caption         =   "LINK DOTS V0.1A"
    ClientHeight    =   5220
-   ClientLeft      =   120
-   ClientTop       =   465
+   ClientLeft      =   45
+   ClientTop       =   390
    ClientWidth     =   9930
    LinkTopic       =   "Form1"
+   MaxButton       =   0   'False
    ScaleHeight     =   5220
    ScaleWidth      =   9930
    StartUpPosition =   3  'Windows Default
@@ -41,6 +43,9 @@ Public Function IsKeyDownMAIN(ByVal Key As Integer) As Boolean
 End Function
 
 Private Sub Form_Load()
+
+    Randomize
+
     frmDebug.Show
     frmImages.Show
 
@@ -51,14 +56,32 @@ Private Sub Form_Load()
     
     Init
     
+   ' Dim Level() As Integer
+   ' Level = GenerateLevel(100, 100, 0)
+  '  LoadLevel Level, 100, 100
     Dim TestObj As GameObject
+    Dim TestEnemy As GameObject
+    Dim TestEnemy2 As GameObject
+    Dim TestRoom As Room
+   ' Dim WallObj As GameObject
+    Dim A As Long
+    Dim B As Long
     
-    Create TestObj, 3000, 1000, PLAYER
+    For A = 0 To 9
+        For B = 0 To 9
+         '   Dim WallObj As GameObject
+         '   Create WallObj, 1000 + A * 480, 1000 + B * 480, CHECKER
+        Next B
+    Next A
+    TestRoom.CorrectPath = "U"
     
-    Dim WallObj As GameObject
+    Create TestObj, ToTwips(500), ToTwips(500), Player
+    Create TestEnemy, ToTwips(600), ToTwips(500), ENEMY1
+    Create TestEnemy2, ToTwips(800), ToTwips(500), ENEMY1
     
-    Create WallObj, 5000, 1000, WALL
+   ' LoadRoom TestRoom
     
+  '  Create WallObj, 5000, 1000, CHECKER
     'TypeIDs: 0 = Player
 
 End Sub
@@ -73,6 +96,7 @@ End Sub
 
 Private Sub tmrLoop_Timer()
     picDisplay.Cls
+    
     Update
     Render
 End Sub

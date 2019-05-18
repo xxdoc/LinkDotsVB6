@@ -1,14 +1,32 @@
 Attribute VB_Name = "mdlMain"
+Option Explicit
+
 Global Objects() As GameObject
 Global ObjCreateQueue() As GameObject
 Global ObjRemoveQueue() As GameObject
 Global Dots() As GameObject
 Global CamX, CamY As Long
+Global CurrentLevel() As Integer
+Global Stage() As Integer
 
 Global Const INTEGERLIMIT = 32767
-
 Global Const CAMXOFFSET = 200
 Global Const CAMYOFFSET = 700
+
+Global CurrentRoom As Room
+Global NextRoom As Room
+Global LoadingNext As Boolean
+
+Global MacroX As Integer
+Global MacroY As Integer
+
+Public Function ToPixels(ByVal Twips As Long) As Long
+    ToPixels = (Twips / 480) * 32
+End Function
+
+Public Function ToTwips(ByVal Pixels As Long) As Long
+    ToTwips = (Pixels * 480) / 32
+End Function
 
 Public Function CamCorrectX(ByVal X As Long) As Long
     CamCorrectX = (frmMain.Width / 2) + (X - CamX)
@@ -101,11 +119,11 @@ End Sub
 Public Sub RemoveObjectIndexQueue(ByVal Index As Integer)
     Dim I As Integer
     Dim Lower As Integer
-        For I = Index To UBound(ObjCreateQueue) - 2
-        ObjCreateQueue(I) = ObjCreateQueue(I + 1)
+        For I = Index To UBound(ObjRemoveQueue) - 2
+        ObjCreateQueue(I) = ObjRemoveQueue(I + 1)
     Next I
-    Lower = UBound(ObjCreateQueue) - 1
-    ReDim Preserve ObjCreateQueue(Lower)
+    Lower = UBound(ObjRemoveQueue) - 1
+    ReDim Preserve ObjRemoveQueue(Lower)
 End Sub
 
 Public Sub SortZOrder(Objects() As GameObject)
@@ -114,11 +132,12 @@ End Sub
 
 Public Sub Update()
     Dim I As Integer
+    Dim J As Integer
     Dim S As String
     S = ""
     For I = 0 To UBound(Objects) - 1
-        UpdateObject Objects(I)
         Objects(I).ID = I
+        UpdateObject Objects(I)
         S = S & Objects(I).TypeID & " "
         If (Objects(I).Removed) Then
             RemoveObjectQueue Objects(I)
@@ -137,12 +156,21 @@ Public Sub Update()
     For I = 0 To UBound(ObjRemoveQueue) - 1
         RemoveObject ObjRemoveQueue(I)
     Next I
+    
+    If (LoadingNext) Then
+        LoadRoom NextRoom
+        LoadingNext = False
+    End If
+    
     ReDim ObjCreateQueue(0)
     ReDim ObjRemoveQueue(0)
 End Sub
 
 Public Sub Render()
     'Note there will be an error if link dot position extend pass integer limit.
+    
+    'frmMain.picDisplay.PaintPicture frmImages.imgBkgForest(0), CamCorrectX(0), CamCorrectY(0), frmImages.imgBkgForest(0).Width, frmImages.imgBkgForest(0).Height
+    
     Dim I As Integer
     Dim Obj As GameObject
     For I = 0 To UBound(Objects) - 1
@@ -155,9 +183,8 @@ Public Sub Render()
             If (DrawX < INTEGERLIMIT And DrawX > -INTEGERLIMIT) And (DrawY < INTEGERLIMIT And DrawY > -INTEGERLIMIT) Then
                 DrawImage GetSprite(Obj.SpriteID, Obj.SpriteFrame), DrawX, DrawY
             End If
-        Else
-            RenderObject Obj
         End If
+        RenderObject Obj
     Next I
 End Sub
 

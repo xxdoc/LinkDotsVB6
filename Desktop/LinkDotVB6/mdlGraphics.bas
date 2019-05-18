@@ -5,6 +5,8 @@ Option Explicit
 
 Global Const WIZARD = 0
 Global Const BRICK = 1
+Global Const CHECKERFLOOR = 2
+Global Const ENEMYKNIGHT = 3
 
 Public Type Sprite
     Width As Integer
@@ -27,6 +29,14 @@ Public Function GetSprite(ByVal SpriteID As Integer, ByVal Frame As Integer) As 
             Set ReturnImage.Pic = frmImages.imgBrick(Frame).Picture
             ReturnImage.Width = frmImages.imgBrick(Frame).Width
             ReturnImage.Height = frmImages.imgBrick(Frame).Height
+        Case CHECKERFLOOR
+            Set ReturnImage.Pic = frmImages.imgCheckerFloor(Frame).Picture
+            ReturnImage.Width = frmImages.imgCheckerFloor(Frame).Width
+            ReturnImage.Height = frmImages.imgCheckerFloor(Frame).Height
+        Case ENEMYKNIGHT
+            Set ReturnImage.Pic = frmImages.imgEnemyKnight(Frame).Picture
+            ReturnImage.Width = frmImages.imgEnemyKnight(Frame).Width
+            ReturnImage.Height = frmImages.imgEnemyKnight(Frame).Height
     End Select
     GetSprite = ReturnImage
 End Function
