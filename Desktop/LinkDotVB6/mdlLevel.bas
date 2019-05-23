@@ -1,103 +1,157 @@
 Attribute VB_Name = "mdlLevel"
 Option Explicit
 
-Const TILELENGTH = 480
+'Author: William Chan
+'Date: May 17th, 2019
+'Purpose: ICS4U Culminating Assignment
 
-Public Function GenerateLevel(ByVal LWidth As Integer, ByVal LHeight As Integer, ByVal Difficulty As Integer) As Integer()
-    Dim Level(0 To 100, 0 To 100) As Integer
-    Dim I As Integer
-    Dim CX As Integer
-    Dim CY As Integer
-    Dim PlayerSpawned As Boolean
-    Dim Direction
-    Direction = 0
-    PlayerSpawned = False
-    CX = (LWidth) / 32
-    CY = (LHeight) / 32
-    For I = 0 To 999
-        If (Rnd() > 0.5 Or CX > LWidth - 1 Or CX < 2 Or CY > LHeight - 1 Or CY < 2) Then
-            If (Rnd() > 0.5) Then
-                Direction = (Direction + 1) Mod 4
-            Else
-                Direction = (Direction + 3) Mod 4
-            End If
-        End If
-        
-        If (Direction = 1 Or Direction = 3) Then
-            CX = CX + Direction - 2
-        ElseIf (Direction = 2 Or Direction = 0) Then
-            CY = CY + Direction - 1
-        End If
-        
-        'Place tile
-        'If (Level(CX, CY) <> "W") Then
-        If (CX >= 0 And CX < LWidth And CY >= 0 And CY < LHeight) Then
-            Level(CX, CY) = 1
-            If (Not PlayerSpawned) Then
-                Level(CX, CY) = 3
-               ' MsgBox "AY"
-                PlayerSpawned = True
-            End If
-        
-       ' End If
-        'Place Walls
-        If (CX < LWidth) Then
-            If (Level(CX + 1, CY) <> 1 And Not (CX + 1 > LWidth - 1) And Direction <> 1) Then
-                Level(CX + 1, CY) = 2
-            End If
-        End If
-        If (CX > 1) Then
-            If (Level(CX - 1, CY) <> 1 And Not (CX - 1 < 1) And Direction <> 3) Then
-                Level(CX - 1, CY) = 2
-            End If
-        End If
-        If (CY < LHeight) Then
-            If (Level(CX, CY + 1) <> 1 And Not (CY + 1 > LHeight - 1) And Direction <> 2) Then
-                Level(CX, CY + 1) = 2
-            End If
-        End If
-        If (CY > 1) Then
-            If (Level(CX, CY - 1) <> 1 And Not (CY - 1 < 1) And Direction <> 0) Then
-                Level(CX, CY - 1) = 2
-            End If
-        End If
-        End If
-    Next I
-    
-    GenerateLevel = Level
-End Function
+Global Const TILELENGTH = 480
+Global Const MAXOBJECTS = 200
 
-Public Sub RenderLevel(Level() As Integer, ByVal LWidth As Integer, ByVal LHeight As Integer)
-    Dim I As Long
-    Dim J As Long
-    For I = 0 To LWidth - 1
-        For J = 0 To LHeight - 1
-            If (CamCorrectX(I * TILELENGTH) < INTEGERLIMIT And CamCorrectX(I * TILELENGTH) > -INTEGERLIMIT) _
-                        And (CamCorrectY(I * TILELENGTH) < INTEGERLIMIT And CamCorrectY(I * TILELENGTH) > -INTEGERLIMIT) Then
-                Select Case Level(I, J)
-                    Case 1 'Floor
-                    '    frmMain.picDisplay.PaintPicture frmImages.imgCheckerFloor(0), CamCorrectX(I * TILELENGTH), CamCorrectY(J * TILELENGTH), 480, 480
-                    Case 2 'Wall
-                    '    frmMain.picDisplay.PaintPicture frmImages.imgBrick(0), CamCorrectX(I * TILELENGTH), CamCorrectY(J * TILELENGTH), 480, 480
-                End Select
-            End If
-        Next J
-    Next I
+Global MapCollision() As EuclideanLine
+
+Public Type SeamlessRoom
+    Path As String * 5
+    Spot As Integer
+End Type
+
+
+Public Sub SetMapCollisions()
+    If (BackgroundID = 0) Then
+        MapCollision(0) = CreateLine(ToTwips(200 + MacroX * 800), ToTwips(178 + MacroY * 800), ToTwips(331 + MacroX * 800), ToTwips(178 + MacroY * 800))
+        MapCollision(1) = CreateLine(ToTwips(331 + MacroX * 800), ToTwips(178 + MacroY * 800), ToTwips(331 + MacroX * 800), ToTwips(0 + MacroY * 800))
+        MapCollision(2) = CreateLine(ToTwips(460 + MacroX * 800), ToTwips(0 + MacroY * 800), ToTwips(460 + MacroX * 800), ToTwips(178 + MacroY * 800))
+        MapCollision(3) = CreateLine(ToTwips(460 + MacroX * 800), ToTwips(178 + MacroY * 800), ToTwips(600 + MacroX * 800), ToTwips(178 + MacroY * 800))
+        MapCollision(4) = CreateLine(ToTwips(600 + MacroX * 800), ToTwips(178 + MacroY * 800), ToTwips(600 + MacroX * 800), ToTwips(331 + MacroY * 800))
+        MapCollision(5) = CreateLine(ToTwips(600 + MacroX * 800), ToTwips(331 + MacroY * 800), ToTwips(800 + MacroX * 800), ToTwips(331 + MacroY * 800))
+        MapCollision(6) = CreateLine(ToTwips(800 + MacroX * 800), ToTwips(450 + MacroY * 800), ToTwips(600 + MacroX * 800), ToTwips(450 + MacroY * 800))
+        MapCollision(7) = CreateLine(ToTwips(600 + MacroX * 800), ToTwips(550 + MacroY * 800), ToTwips(460 + MacroX * 800), ToTwips(550 + MacroY * 800))
+        MapCollision(8) = CreateLine(ToTwips(460 + MacroX * 800), ToTwips(550 + MacroY * 800), ToTwips(460 + MacroX * 800), ToTwips(800 + MacroY * 800))
+        MapCollision(9) = CreateLine(ToTwips(331 + MacroX * 800), ToTwips(800 + MacroY * 800), ToTwips(331 + MacroX * 800), ToTwips(550 + MacroY * 800))
+        MapCollision(10) = CreateLine(ToTwips(331 + MacroX * 800), ToTwips(550 + MacroY * 800), ToTwips(205 + MacroX * 800), ToTwips(550 + MacroY * 800))
+        MapCollision(11) = CreateLine(ToTwips(205 + MacroX * 800), ToTwips(450 + MacroY * 800), ToTwips(0 + MacroX * 800), ToTwips(450 + MacroY * 800))
+        MapCollision(12) = CreateLine(ToTwips(205 + MacroX * 800), ToTwips(550 + MacroY * 800), ToTwips(205 + MacroX * 800), ToTwips(450 + MacroY * 800))
+        MapCollision(13) = CreateLine(ToTwips(600 + MacroX * 800), ToTwips(450 + MacroY * 800), ToTwips(600 + MacroX * 800), ToTwips(550 + MacroY * 800))
+        MapCollision(14) = CreateLine(ToTwips(200 + MacroX * 800), ToTwips(178 + MacroY * 800), ToTwips(200 + MacroX * 800), ToTwips(331 + MacroY * 800))
+        MapCollision(15) = CreateLine(ToTwips(200 + MacroX * 800), ToTwips(331 + MacroY * 800), ToTwips(0 + MacroX * 800), ToTwips(331 + MacroY * 800))
+    ElseIf (BackgroundID = 1) Then
+        '2D Arrays don't work here for some reason. Hence:
+        Dim Pillar1() As EuclideanLine
+        Dim Pillar2() As EuclideanLine
+        Dim Pillar3() As EuclideanLine
+        Dim Pillar4() As EuclideanLine
+        Dim Statue1() As EuclideanLine
+        Dim Statue2() As EuclideanLine
+
+        Pillar1 = GetLines(ToTwips(295 + MacroX * 800), ToTwips(241 + MacroY * 800), ToTwips(43), ToTwips(96))
+        Pillar2 = GetLines(ToTwips(466 + MacroX * 800), ToTwips(241 + MacroY * 800), ToTwips(43), ToTwips(96))
+        Pillar3 = GetLines(ToTwips(295 + MacroX * 800), ToTwips(418 + MacroY * 800), ToTwips(43), ToTwips(96))
+        Pillar4 = GetLines(ToTwips(466 + MacroX * 800), ToTwips(418 + MacroY * 800), ToTwips(43), ToTwips(96))
+        
+        Statue1 = GetLines(ToTwips(247 + MacroX * 800), ToTwips(31 + MacroY * 800), ToTwips(35), ToTwips(63))
+        Statue2 = GetLines(ToTwips(735 + MacroX * 800), ToTwips(222 + MacroY * 800), ToTwips(35), ToTwips(63))
+        
+        MapCollision(0) = Pillar1(0)
+        MapCollision(1) = Pillar1(1)
+        MapCollision(2) = Pillar1(2)
+        MapCollision(3) = Pillar1(3)
+        
+        MapCollision(4) = Pillar2(0)
+        MapCollision(5) = Pillar2(1)
+        MapCollision(6) = Pillar2(2)
+        MapCollision(7) = Pillar2(3)
+        
+        MapCollision(8) = Pillar3(0)
+        MapCollision(9) = Pillar3(1)
+        MapCollision(10) = Pillar3(2)
+        MapCollision(11) = Pillar3(3)
+        
+        MapCollision(12) = Pillar4(0)
+        MapCollision(13) = Pillar4(1)
+        MapCollision(14) = Pillar4(2)
+        MapCollision(15) = Pillar4(3)
+        
+        MapCollision(16) = Statue1(0)
+        MapCollision(17) = Statue1(1)
+        MapCollision(18) = Statue1(2)
+        MapCollision(19) = Statue1(3)
+        
+        MapCollision(20) = Statue2(0)
+        MapCollision(21) = Statue2(1)
+        MapCollision(22) = Statue2(2)
+        MapCollision(23) = Statue2(3)
+    End If
 End Sub
 
-Public Sub LoadLevel(Level() As Integer, ByVal LWidth As Integer, ByVal LHeight As Integer)
-    ReDim Objects(0)
-    Dim I As Long
-    Dim J As Long
+Public Sub LoadNewLevel()
+    Dim NewLevel As SeamlessRoom
+    Dim Rng As Double
     
-    For I = 0 To LWidth - 1
-        For J = 0 To LHeight - 1
-            Dim TileObj As GameObject
-            Select Case Level(I, J)
-                Case 3
-                    CreateQueue TileObj, I * TILELENGTH, J * TILELENGTH, PLAYER
-            End Select
-        Next J
-    Next I
-    CurrentLevel = Level
+    Rng = Rnd()
+    
+    If (Rng <= 0.5) Then
+        BackgroundID = 0
+        ReDim MapCollision(0 To 15)
+    Else
+        BackgroundID = 1
+        ReDim MapCollision(24)
+    End If
+    
+    LoadRoomQueue
+    
+    NewLevel = GenerateLevel()
+    CurrentRoom = NewLevel
+End Sub
+
+Public Function GenerateLevel() As SeamlessRoom
+
+    Dim MaxSize As Integer
+
+    Dim NewLevel As SeamlessRoom
+    Dim I As Integer
+    Dim Rng As Double
+    Dim Path As String
+    
+    Dim Visited(0 To 20, 0 To 20) As Boolean
+    
+    Dim GX As Integer
+    Dim GY As Integer
+    
+    MaxSize = 20 'Make this more flexible in later version.
+    
+    GX = Int(MaxSize / 2) + 1
+    GY = Int(MaxSize / 2) + 1
+    
+    Visited(GX, GY) = True
+    
+    Path = ""
+    NewLevel.Spot = 1
+    
+    For I = 0 To Int(MaxSize / 2)
+        Rng = Rnd()
+        If (Rng <= 0.25 And Not Visited(GX, GY - 1)) Then
+            Path = Path & "U"
+            Visited(GX, GY - 1) = True
+            GY = GY - 1
+        ElseIf (Rng <= 0.5 And Not Visited(GX + 1, GY)) Then
+            Path = Path & "R"
+            Visited(GX + 1, GY) = True
+            GX = GX + 1
+        ElseIf (Rng <= 0.75 And Not Visited(GX - 1, GY)) Then
+            Path = Path & "L"
+            Visited(GX - 1, GY) = True
+            GX = GX - 1
+        ElseIf (Not Visited(GX, GY + 1)) Then
+            Path = Path & "D"
+            Visited(GX, GY + 1) = True
+            GY = GY + 1
+        End If
+    Next
+    
+    NewLevel.Path = Path
+    GenerateLevel = NewLevel
+End Function
+
+Public Sub LoadRoomQueue()
+    LoadingNext = True
 End Sub
